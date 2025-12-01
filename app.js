@@ -24,30 +24,49 @@ function todayISO(){ return new Date().toISOString().slice(0,10); }
 
 // --- UI helpers
 
-function showView(view){
-  // hide bottom navigation on login screen
-  document.querySelector(".bottom-nav").style.display =
-    view === "loginView" ? "none" : "flex";
+function init(){
+  load();            // restore store from localStorage
+  attachEvents();    // wire up buttons and forms
+  populateUserList(); // show existing users list if any
 
-  const views = ["loginView","dashboardView","ledgerView","inventoryView","loansView"];
-  views.forEach(v => document.getElementById(v).style.display = "none");
+  // set date defaults
+  document.getElementById("ledgerDate").value = todayISO();
+  document.getElementById("loanDate").value = todayISO();
+  document.getElementById("filterFrom").value = "";
+  document.getElementById("filterTo").value = "";
 
-  document.getElementById("logoutBtn").style.display = store.currentUser ? "block" : "none";
-  document.getElementById("currentUserBadge").textContent = store.currentUser || "";
+  // show dashboard only if a user is signed in; otherwise show login
+  if(store.currentUser) showView("dashboardView");
+  else showView("loginView");
+}function showView(view){
+    // hide bottom navigation on login screen
+    document.querySelector(".bottom-nav").style.display =
+        view === "loginView" ? "none" : "flex";
 
-  if(view === "dashboardView") renderDashboard();
-  if(view === "ledgerView") renderLedger();
-  if(view === "inventoryView") renderInventory();
-  if(view === "loansView") renderLoans();
+    const views = ["loginView","dashboardView","ledgerView","inventoryView","loansView"];
+    views.forEach(v => document.getElementById(v).style.display = "none");
 
-  document.getElementById(view).style.display = "block";
+    document.getElementById("logoutBtn").style.display =
+        view === "loginView" ? "none" : "inline-block";
+
+    document.getElementById("currentUserBadge").textContent =
+        store.currentUser ? store.currentUser : "";
+
+    if(view === "dashboardView") renderDashboard();
+    if(view === "ledgerView") renderLedger();
+    if(view === "inventoryView") renderInventory();
+    if(view === "loansView") renderLoans();
+
+    document.getElementById(view).style.display = "block";
 }
+
 
 
 function attachEvents(){
   document.getElementById("createBtn").addEventListener("click", ()=>{
     const user = document.getElementById("usernameInput").value.trim().toLowerCase();
-    const pin = document.getElementById("pinInput").value.trim();
+    const pin = document.getElementById("pinInpfunction showView(view){
+    /ut").value.trim();
     if(!user || !/^[a-z0-9_-]{2,20}$/.test(user)){ alert("Enter a username (2-20 chars, letters/numbers/_/-)"); return; }
     if(!/^\d{5}$/.test(pin)){ alert("PIN must be 5 digits"); return; }
     if(store.users[user]){ alert("User exists. Choose a different username or sign in."); return; }
