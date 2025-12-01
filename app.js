@@ -290,3 +290,8 @@ function exportCSV(kind){
 
 // start
 // init() is called from index.html DOMContentLoaded listener
+if ("serviceWorker" in navigator) {
+  navigator.serviceWorker.register("/service-worker.js")
+    .then(() => console.log("Service Worker Registered"))
+    .catch(err => console.log("SW registration failed:", err));
+}
