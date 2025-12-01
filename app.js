@@ -24,21 +24,25 @@ function todayISO(){ return new Date().toISOString().slice(0,10); }
 
 // --- UI helpers
 
-
 function showView(view){
+  // hide bottom navigation on login screen
+  document.querySelector(".bottom-nav").style.display =
+    view === "loginView" ? "none" : "flex";
+
   const views = ["loginView","dashboardView","ledgerView","inventoryView","loansView"];
-  views.forEach(v=> document.getElementById(v).style.display = "none");
+  views.forEach(v => document.getElementById(v).style.display = "none");
+
   document.getElementById("logoutBtn").style.display = store.currentUser ? "block" : "none";
   document.getElementById("currentUserBadge").textContent = store.currentUser || "";
 
-  if(view==="dashboardView") renderDashboard();
-  if(view==="ledgerView") renderLedger();
-  if(view==="inventoryView") renderInventory();
-  if(view==="loansView") renderLoans();
+  if(view === "dashboardView") renderDashboard();
+  if(view === "ledgerView") renderLedger();
+  if(view === "inventoryView") renderInventory();
+  if(view === "loansView") renderLoans();
 
   document.getElementById(view).style.display = "block";
 }
-}
+
 
 function attachEvents(){
   document.getElementById("createBtn").addEventListener("click", ()=>{
