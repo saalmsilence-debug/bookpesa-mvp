@@ -4,9 +4,7 @@ const ASSETS = [
   "/index.html",
   "/styles.css",
   "/app.js",
-  "/manifest.json",
-  "/icons/icon-192.png",
-  "/icons/icon-512.png"
+  "/service-worker.js"
 ];
 
 // Install cache
@@ -16,6 +14,7 @@ self.addEventListener("install", event => {
       return cache.addAll(ASSETS);
     })
   );
+  self.skipWaiting();
 });
 
 // Serve cached files
