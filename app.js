@@ -1,4 +1,4 @@
-// BookPesa MVP v2 - Multi-user, date-aware ledger, inventory, loans, P&L range
+// BookPesa MVP - clean single-file JS (local storage)
 const STORAGE_KEY = "bookpesa_v2_all_users";
 
 let store = {
@@ -6,161 +6,166 @@ let store = {
   currentUser: null
 };
 
-function save() {
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(store));
-}
+function save() { localStorage.setItem(STORAGE_KEY, JSON.stringify(store)); }
 function load() {
   const raw = localStorage.getItem(STORAGE_KEY);
-  if(raw) {
-    try { store = JSON.parse(raw); } catch(e){ console.error(e); }
+  if (raw) {
+    try { store = JSON.parse(raw); } catch (e) { console.error(e); }
   }
 }
 function uid(){ return Date.now().toString(36)+Math.random().toString(36).slice(2,6); }
-function formatKsh(x){
-  const n = Number(x)||0;
-  return "Ksh " + n.toLocaleString();
-}
+function formatKsh(x){ const n = Number(x)||0; return "Ksh " + n.toLocaleString(); }
 function todayISO(){ return new Date().toISOString().slice(0,10); }
 
-// --- UI helpers
+// showView: central navigation
+function showView(view){
+  // hide bottom nav on login
+  const nav = document.querySelector(".bottom-nav");
+  if(nav) nav.style.display = (view === "loginView") ? "none" : "flex";
 
+  const views = ["loginView","dashboardView","ledgerView","inventoryView","loansView"];
+  views.forEach(v=> { const el = document.getElementById(v); if(el) el.style.display = "none"; });
+
+  const logoutBtn = document.getElementById("logoutBtn");
+  if(logoutBtn) logoutBtn.style.display = (view === "loginView") ? "none" : "inline-block";
+  const badge = document.getElementById("currentUserBadge");
+  if(badge) badge.textContent = store.currentUser ? store.currentUser : "";
+
+  if(view === "dashboardView") renderDashboard();
+  if(view === "ledgerView") renderLedger();
+  if(view === "inventoryView") renderInventory();
+  if(view === "loansView") renderLoans();
+
+  const target = document.getElementById(view);
+  if(target) target.style.display = "block";
+}
+
+// initialization
 function init(){
-  load();            // restore store from localStorage
-  attachEvents();    // wire up buttons and forms
-  populateUserList(); // show existing users list if any
+  load();
+  attachEvents();
+  populateUserList();
 
-  // set date defaults
-  document.getElementById("ledgerDate").value = todayISO();
-  document.getElementById("loanDate").value = todayISO();
-  document.getElementById("filterFrom").value = "";
-  document.getElementById("filterTo").value = "";
+  // defaults
+  const ld = document.getElementById("ledgerDate"); if(ld) ld.value = todayISO();
+  const loanD = document.getElementById("loanDate"); if(loanD) loanD.value = todayISO();
+  const ffrom = document.getElementById("filterFrom"); if(ffrom) ffrom.value = "";
+  const fto = document.getElementById("filterTo"); if(fto) fto.value = "";
 
-  // show dashboard only if a user is signed in; otherwise show login
-  if (store.currentUser) showView("dashboardView");
-else showView("loginView");
+  if(store.currentUser) showView("dashboardView");
+  else showView("loginView");
 }
 
-function showView(view) {
-    // hide bottom navigation on login screen
-    document.querySelector(".bottom-nav").style.display =
-        view === "loginView" ? "none" : "flex";
-
-    const views = ["loginView","dashboardView","ledgerView","inventoryView","loansView"];
-    views.forEach(v => document.getElementById(v).style.display = "none");
-
-    document.getElementById("logoutBtn").style.display =
-        view === "loginView" ? "none" : "inline-block";
-
-    document.getElementById("currentUserBadge").textContent =
-        store.currentUser ? store.currentUser : "";
-
-    if(view === "dashboardView") renderDashboard();
-    if(view === "ledgerView") renderLedger();
-    if(view === "inventoryView") renderInventory();
-    if(view === "loansView") renderLoans();
-
-    document.getElementById(view).style.display = "block";
-}
-
-
-
+// events and handlers
 function attachEvents(){
-  document.getElementById("createBtn").addEventListener("click", ()=>{
-    const user = document.getElementById("usernameInput").value.trim().toLowerCase();
-    const pin = document.getElementById("pinInpfunction showView(view){
-    /ut").value.trim();
-    if(!user || !/^[a-z0-9_-]{2,20}$/.test(user)){ alert("Enter a username (2-20 chars, letters/numbers/_/-)"); return; }
+  // create account
+  const createBtn = document.getElementById("createBtn");
+  if(createBtn) createBtn.addEventListener("click", ()=> {
+    const user = (document.getElementById("usernameInput").value || "").trim().toLowerCase();
+    const pin = (document.getElementById("pinInput").value || "").trim();
+    if(!user || !/^[a-z0-9_-]{2,20}$/.test(user)){ alert("Enter username (2-20 letters/numbers/_/-)"); return; }
     if(!/^\d{5}$/.test(pin)){ alert("PIN must be 5 digits"); return; }
-    if(store.users[user]){ alert("User exists. Choose a different username or sign in."); return; }
+    if(store.users[user]){ alert("User exists. Choose another username."); return; }
     store.users[user] = { pin, ledger:[], inventory:[], loans:[] };
-    store.currentUser = user;
-    save();
-    populateUserList();
-    show("dashboardView");
+    store.currentUser = user; save(); populateUserList(); showView("dashboardView");
   });
 
-  document.getElementById("loginBtn").addEventListener("click", ()=>{
-    const user = document.getElementById("usernameInput").value.trim().toLowerCase();
-    const pin = document.getElementById("pinInput").value.trim();
+  // sign in
+  const loginBtn = document.getElementById("loginBtn");
+  if(loginBtn) loginBtn.addEventListener("click", ()=> {
+    const user = (document.getElementById("usernameInput").value || "").trim().toLowerCase();
+    const pin = (document.getElementById("pinInput").value || "").trim();
     if(!store.users[user]){ alert("No such user. Create account first."); return; }
     if(store.users[user].pin !== pin){ alert("Wrong PIN"); return; }
-    store.currentUser = user; save(); populateUserList(); show("dashboardView");
+    store.currentUser = user; save(); populateUserList(); showView("dashboardView");
   });
 
-  document.getElementById("logoutBtn").addEventListener("click", ()=>{ store.currentUser = null; save(); show("loginView"); });
+  // logout
+  const logoutBtn = document.getElementById("logoutBtn");
+  if(logoutBtn) logoutBtn.addEventListener("click", ()=> {
+    store.currentUser = null; save(); showView("loginView");
+  });
 
-  // clicking existing user from list
-  document.getElementById("userList").addEventListener("click", (e)=>{
-    if(e.target.dataset.user){
+  // clicking existing user in list (use)
+  const userList = document.getElementById("userList");
+  if(userList) userList.addEventListener("click", (e)=> {
+    if(e.target && e.target.dataset && e.target.dataset.user){
       const u = e.target.dataset.user;
-      const pin = prompt("Enter PIN for " + u);
-      if(pin === null) return;
-      if(store.users[u] && store.users[u].pin === pin){ store.currentUser = u; save(); show("dashboardView"); }
+      const p = prompt("Enter PIN for " + u);
+      if(p === null) return;
+      if(store.users[u] && store.users[u].pin === p){ store.currentUser = u; save(); showView("dashboardView"); }
       else alert("Wrong PIN");
     }
   });
 
-  // Nav buttons
-  document.querySelectorAll("[data-nav]").forEach(b=> b.addEventListener("click", e=> show(e.target.dataset.nav)));
+  // nav buttons (data-nav)
+  document.querySelectorAll("[data-nav]").forEach(b=>{
+    b.addEventListener("click", (e)=> {
+      const nav = e.currentTarget.dataset.nav;
+      if(nav) showView(nav);
+    });
+  });
 
-  // Ledger form
-  document.getElementById("ledgerForm").addEventListener("submit", (e)=>{
+  // ledger form
+  const ledgerForm = document.getElementById("ledgerForm");
+  if(ledgerForm) ledgerForm.addEventListener("submit", (e)=> {
     e.preventDefault();
     if(!ensureUser()) return;
-    const desc = document.getElementById("ledgerDesc").value.trim();
+    const desc = (document.getElementById("ledgerDesc").value || "").trim();
     const amt = Number(document.getElementById("ledgerAmount").value) || 0;
     const date = document.getElementById("ledgerDate").value || todayISO();
-    const tag = document.getElementById("ledgerTag").value;
+    const tag = document.getElementById("ledgerTag").value || "other";
     if(!desc){ alert("Enter description"); return; }
     const entry = { id: uid(), desc, amt, date, tag, created: new Date().toISOString() };
     store.users[store.currentUser].ledger.unshift(entry);
-    save(); document.getElementById("ledgerForm").reset(); document.getElementById("ledgerDate").value = todayISO();
+    save(); ledgerForm.reset(); const ld = document.getElementById("ledgerDate"); if(ld) ld.value = todayISO();
     renderLedger(); renderDashboard();
   });
-  document.querySelector("[data-action='clear-ledger']").addEventListener("click", (e)=>{ e.preventDefault(); if(confirm("Clear all ledger entries?")){ store.users[store.currentUser].ledger=[]; save(); renderLedger(); renderDashboard(); }});
-  document.querySelector("[data-action='export-ledger']").addEventListener("click",(e)=>{ e.preventDefault(); exportCSV('ledger'); });
+  const clearLedger = document.querySelector("[data-action='clear-ledger']");
+  if(clearLedger) clearLedger.addEventListener("click", (e)=>{ e.preventDefault(); if(!ensureUser()) return; if(confirm("Clear all ledger entries?")){ store.users[store.currentUser].ledger=[]; save(); renderLedger(); renderDashboard(); }});
+  const exportLedger = document.querySelector("[data-action='export-ledger']");
+  if(exportLedger) exportLedger.addEventListener("click",(e)=>{ e.preventDefault(); exportCSV('ledger'); });
 
-  // Inventory
-  document.getElementById("inventoryForm").addEventListener("submit",(e)=>{
-    e.preventDefault();
-    if(!ensureUser()) return;
-    const name = document.getElementById("itemName").value.trim();
+  // inventory
+  const invForm = document.getElementById("inventoryForm");
+  if(invForm) invForm.addEventListener("submit",(e)=>{
+    e.preventDefault(); if(!ensureUser()) return;
+    const name = (document.getElementById("itemName").value || "").trim();
     const qty = Number(document.getElementById("itemQty").value) || 0;
     const price = Number(document.getElementById("itemPrice").value) || 0;
     if(!name){ alert("Enter item name"); return; }
     const inv = store.users[store.currentUser].inventory;
     const existing = inv.find(it=>it.name.toLowerCase()===name.toLowerCase());
-    if(existing){
-      existing.qty = existing.qty + qty;
-      existing.price = price;
-    } else {
-      inv.unshift({ id: uid(), name, qty, price, created: new Date().toISOString() });
-    }
-    save(); document.getElementById("inventoryForm").reset(); renderInventory(); renderDashboard();
+    if(existing){ existing.qty = existing.qty + qty; existing.price = price; } else { inv.unshift({ id: uid(), name, qty, price, created: new Date().toISOString() }); }
+    save(); invForm.reset(); renderInventory(); renderDashboard();
   });
-  document.querySelector("[data-action='clear-inv']").addEventListener("click",(e)=>{ e.preventDefault(); if(confirm("Clear all inventory?")){ store.users[store.currentUser].inventory=[]; save(); renderInventory(); renderDashboard(); }});
-  document.querySelector("[data-action='export-inv']").addEventListener("click",(e)=>{ e.preventDefault(); exportCSV('inventory'); });
+  const clearInv = document.querySelector("[data-action='clear-inv']");
+  if(clearInv) clearInv.addEventListener("click",(e)=>{ e.preventDefault(); if(!ensureUser()) return; if(confirm("Clear all inventory?")){ store.users[store.currentUser].inventory=[]; save(); renderInventory(); renderDashboard(); }});
+  const exportInv = document.querySelector("[data-action='export-inv']");
+  if(exportInv) exportInv.addEventListener("click",(e)=>{ e.preventDefault(); exportCSV('inventory'); });
 
-  // Loans
-  document.getElementById("loanForm").addEventListener("submit",(e)=>{
-    e.preventDefault();
-    if(!ensureUser()) return;
-    const name = document.getElementById("loanName").value.trim();
+  // loans
+  const loanForm = document.getElementById("loanForm");
+  if(loanForm) loanForm.addEventListener("submit",(e)=>{
+    e.preventDefault(); if(!ensureUser()) return;
+    const name = (document.getElementById("loanName").value || "").trim();
     const amt = Number(document.getElementById("loanAmount").value) || 0;
     const date = document.getElementById("loanDate").value || todayISO();
     if(!name){ alert("Enter name"); return; }
     store.users[store.currentUser].loans.unshift({ id: uid(), name, amt, date, created: new Date().toISOString() });
-    save(); document.getElementById("loanForm").reset(); document.getElementById("loanDate").value = todayISO();
+    save(); loanForm.reset(); const ld = document.getElementById("loanDate"); if(ld) ld.value = todayISO();
     renderLoans(); renderDashboard();
   });
-  document.querySelector("[data-action='clear-loans']").addEventListener("click",(e)=>{ e.preventDefault(); if(confirm("Clear all loans?")){ store.users[store.currentUser].loans=[]; save(); renderLoans(); renderDashboard(); }});
-  document.querySelector("[data-action='export-loans']").addEventListener("click",(e)=>{ e.preventDefault(); exportCSV('loans'); });
+  const clearLoans = document.querySelector("[data-action='clear-loans']");
+  if(clearLoans) clearLoans.addEventListener("click",(e)=>{ e.preventDefault(); if(!ensureUser()) return; if(confirm("Clear all loans?")){ store.users[store.currentUser].loans=[]; save(); renderLoans(); renderDashboard(); }});
+  const exportLoans = document.querySelector("[data-action='export-loans']");
+  if(exportLoans) exportLoans.addEventListener("click",(e)=>{ e.preventDefault(); exportCSV('loans'); });
 
-  // delete buttons (delegate)
+  // delegate delete buttons
   document.body.addEventListener("click",(e)=>{
-    if(e.target.dataset.deleteId){
+    if(e.target && e.target.dataset && e.target.dataset.deleteId){
       const id = e.target.dataset.deleteId;
-      ['ledger','inventory','loans'].forEach(k=>{
+      ["ledger","inventory","loans"].forEach(k=>{
         const arr = store.users[store.currentUser][k];
         const idx = arr.findIndex(x=>x.id===id);
         if(idx>-1){ arr.splice(idx,1); save(); renderLedger(); renderInventory(); renderLoans(); renderDashboard(); }
@@ -168,23 +173,18 @@ function attachEvents(){
     }
   });
 
-  // date filter apply/clear
-  document.getElementById("applyFilter").addEventListener("click", ()=>{
-    renderDashboard();
-  });
-  document.getElementById("clearFilter").addEventListener("click", ()=>{
-    document.getElementById("filterFrom").value = ""; document.getElementById("filterTo").value = ""; renderDashboard();
-  });
+  // filter apply/clear
+  const applyFilter = document.getElementById("applyFilter");
+  if(applyFilter) applyFilter.addEventListener("click", ()=> renderDashboard());
+  const clearFilter = document.getElementById("clearFilter");
+  if(clearFilter) clearFilter.addEventListener("click", ()=>{ const ffrom = document.getElementById("filterFrom"); const fto = document.getElementById("filterTo"); if(ffrom) ffrom.value=""; if(fto) fto.value=""; renderDashboard(); });
 }
 
-function ensureUser(){
-  if(!store.currentUser){ alert("No user signed in."); return false; }
-  if(!store.users[store.currentUser]){ alert("User not found."); return false; }
-  return true;
-}
+// helpers
+function ensureUser(){ if(!store.currentUser){ alert("No user signed in."); return false; } if(!store.users[store.currentUser]){ alert("User not found."); return false; } return true; }
 
 function populateUserList(){
-  const out = document.getElementById("userList");
+  const out = document.getElementById("userList"); if(!out) return;
   out.innerHTML = "";
   const names = Object.keys(store.users || {});
   if(names.length===0){ out.innerHTML = "<p class='muted'>No users yet.</p>"; return; }
@@ -196,9 +196,9 @@ function populateUserList(){
   });
 }
 
-// --- Render functions
+// renderers
 function renderLedger(){
-  if(!ensureUser()) { document.getElementById("ledgerList").innerHTML = "<p class='muted'>Sign in to see ledger.</p>"; return; }
+  if(!ensureUser()){ document.getElementById("ledgerList").innerHTML = "<p class='muted'>Sign in to see ledger.</p>"; return; }
   const entries = store.users[store.currentUser].ledger || [];
   const out = document.getElementById("ledgerList"); out.innerHTML = "";
   if(entries.length===0){ out.innerHTML = "<p class='muted'>No entries yet.</p>"; return; }
@@ -211,7 +211,7 @@ function renderLedger(){
 }
 
 function renderInventory(){
-  if(!ensureUser()) { document.getElementById("inventoryList").innerHTML = "<p class='muted'>Sign in to see inventory.</p>"; return; }
+  if(!ensureUser()){ document.getElementById("inventoryList").innerHTML = "<p class='muted'>Sign in to see inventory.</p>"; return; }
   const inv = store.users[store.currentUser].inventory || [];
   const out = document.getElementById("inventoryList"); out.innerHTML = "";
   if(inv.length===0){ out.innerHTML = "<p class='muted'>No stock yet.</p>"; return; }
@@ -224,7 +224,7 @@ function renderInventory(){
 }
 
 function renderLoans(){
-  if(!ensureUser()) { document.getElementById("loanList").innerHTML = "<p class='muted'>Sign in to see loans.</p>"; return; }
+  if(!ensureUser()){ document.getElementById("loanList").innerHTML = "<p class='muted'>Sign in to see loans.</p>"; return; }
   const loans = store.users[store.currentUser].loans || [];
   const out = document.getElementById("loanList"); out.innerHTML = "";
   if(loans.length===0){ out.innerHTML = "<p class='muted'>No loans yet.</p>"; return; }
@@ -239,17 +239,15 @@ function renderLoans(){
 function parseDate(s){ return new Date(s + "T00:00:00"); }
 
 function renderDashboard(){
-  if(!ensureUser()) { document.getElementById("balance").textContent = "Ksh 0"; return; }
+  if(!ensureUser()){ document.getElementById("balance").textContent = "Ksh 0"; document.getElementById("pnl").textContent="Ksh 0"; document.getElementById("stockVal").textContent="Ksh 0"; return; }
   const user = store.users[store.currentUser];
-  // Balance = ledger sum + loans (loans positive = owed to you, negative = you owe) + inventory value?
   const ledgerSum = (user.ledger || []).reduce((s,i)=>s + Number(i.amt),0);
   const loansSum = (user.loans || []).reduce((s,i)=>s + Number(i.amt),0);
   const stockVal = (user.inventory || []).reduce((s,i)=>s + (Number(i.qty) * Number(i.price)),0);
-  const balance = ledgerSum + loansSum; // inventory not included in cash balance but shown separately
+  const balance = ledgerSum + loansSum;
   document.getElementById("balance").textContent = formatKsh(balance);
   document.getElementById("stockVal").textContent = formatKsh(stockVal);
 
-  // P&L for selected range (or last 30 days by default)
   let from = document.getElementById("filterFrom").value;
   let to = document.getElementById("filterTo").value;
   if(!from || !to){
@@ -266,7 +264,7 @@ function renderDashboard(){
   document.getElementById("pnl").textContent = formatKsh(pnl);
 }
 
-// --- Export CSV helpers
+// CSV export
 function exportCSV(kind){
   if(!ensureUser()) return;
   let rows = [], filename = "export.csv";
@@ -289,13 +287,6 @@ function exportCSV(kind){
   const url = URL.createObjectURL(blob);
   const a = document.createElement("a"); a.href = url; a.download = filename; document.body.appendChild(a); a.click(); a.remove(); URL.revokeObjectURL(url);
 }
-function showView(id) {
-  document.querySelectorAll(".view").forEach(v => {
-    v.style.display = "none";
-  });
 
-  const view = document.getElementById(id);
-  if (view) view.style.display = "block";
-      }
-// --- Init
-init();
+// start
+// init() is called from index.html DOMContentLoaded listener
