@@ -270,6 +270,13 @@ function exportCSV(kind){
   const url = URL.createObjectURL(blob);
   const a = document.createElement("a"); a.href = url; a.download = filename; document.body.appendChild(a); a.click(); a.remove(); URL.revokeObjectURL(url);
 }
+function showView(id) {
+  document.querySelectorAll(".view").forEach(v => {
+    v.style.display = "none";
+  });
 
+  const view = document.getElementById(id);
+  if (view) view.style.display = "block";
+      }
 // --- Init
 init();
