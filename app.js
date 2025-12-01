@@ -36,9 +36,11 @@ function init(){
   document.getElementById("filterTo").value = "";
 
   // show dashboard only if a user is signed in; otherwise show login
-  if(store.currentUser) showView("dashboardView");
-  else showView("loginView");
-}function showView(view){
+  if (store.currentUser) showView("dashboardView");
+else showView("loginView");
+}
+
+function showView(view) {
     // hide bottom navigation on login screen
     document.querySelector(".bottom-nav").style.display =
         view === "loginView" ? "none" : "flex";
