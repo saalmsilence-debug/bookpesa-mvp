@@ -23,27 +23,21 @@ function formatKsh(x){
 function todayISO(){ return new Date().toISOString().slice(0,10); }
 
 // --- UI helpers
-function show(view){
+
+
+function showView(view){
   const views = ["loginView","dashboardView","ledgerView","inventoryView","loansView"];
-  views.forEach(v=> document.getElementById(v).style.display = (v===view) ? "" : "none");
-  document.getElementById("logoutBtn").style.display = store.currentUser ? "" : "none";
-  document.getElementById("currentUserBadge").textContent = store.currentUser ? store.currentUser : "";
+  views.forEach(v=> document.getElementById(v).style.display = "none");
+  document.getElementById("logoutBtn").style.display = store.currentUser ? "block" : "none";
+  document.getElementById("currentUserBadge").textContent = store.currentUser || "";
+
   if(view==="dashboardView") renderDashboard();
   if(view==="ledgerView") renderLedger();
   if(view==="inventoryView") renderInventory();
   if(view==="loansView") renderLoans();
-}
 
-function init(){
-  load();
-  attachEvents();
-  populateUserList();
-  document.getElementById("ledgerDate").value = todayISO();
-  document.getElementById("loanDate").value = todayISO();
-  document.getElementById("filterFrom").value = "";
-  document.getElementById("filterTo").value = "";
-  if(store.currentUser) show("dashboardView");
-  else show("loginView");
+  document.getElementById(view).style.display = "block";
+}
 }
 
 function attachEvents(){
