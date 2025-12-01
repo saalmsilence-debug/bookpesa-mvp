@@ -1,1 +1,98 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>BookPesa MVP</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
 
+<body>
+  <!-- Top Bar -->
+  <div class="topbar">
+    <h1>BookPesa</h1>
+    <button id="logoutBtn" class="danger small">Logout</button>
+  </div>
+
+  <!-- Login Screen -->
+  <div id="loginScreen" class="screen">
+    <h2>Login / Create Account</h2>
+    <input id="username" placeholder="Username" />
+    <input id="pin" placeholder="5-digit PIN" maxlength="5" type="password" />
+    <button id="loginBtn">Continue</button>
+    <p class="muted small">First time? Your account will be created automatically.</p>
+  </div>
+
+  <!-- Main App Screen -->
+  <div id="appScreen" class="hidden">
+    
+    <!-- Dashboard -->
+    <div class="card">
+      <h2>Dashboard</h2>
+      <div class="grid">
+        <div class="item">
+          <h3>KES <span id="pnl">0</span></h3>
+          <p class="muted small">Profit / Loss</p>
+        </div>
+        <div class="item">
+          <h3><span id="salesToday">0</span></h3>
+          <p class="muted small">Today's Sales</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Quick Actions -->
+    <div class="card">
+      <h2>Quick Actions</h2>
+      <div class="grid two">
+        <button onclick="showTab('ledger')">Ledger</button>
+        <button onclick="showTab('inventory')">Inventory</button>
+        <button onclick="showTab('loans')">Loans</button>
+        <button onclick="showTab('filter')">Filter by Date</button>
+      </div>
+    </div>
+
+    <!-- LEDGER -->
+    <div id="ledger" class="card hidden tab">
+      <h2>Ledger</h2>
+      <input id="lDesc" placeholder="Description" />
+      <input id="lAmount" placeholder="Amount" type="number" />
+      <button onclick="addLedger()">Add Entry</button>
+
+      <div class="list" id="ledgerList"></div>
+    </div>
+
+    <!-- INVENTORY -->
+    <div id="inventory" class="card hidden tab">
+      <h2>Inventory</h2>
+      <input id="iName" placeholder="Item Name" />
+      <input id="iQty" placeholder="Quantity" type="number" />
+      <input id="iPrice" placeholder="Price per Unit" type="number" />
+      <button onclick="addInventory()">Add Item</button>
+
+      <div class="list" id="inventoryList"></div>
+    </div>
+
+    <!-- LOANS -->
+    <div id="loans" class="card hidden tab">
+      <h2>Loans / Debts</h2>
+      <input id="loanName" placeholder="Person / Business" />
+      <input id="loanAmt" placeholder="Amount" type="number" />
+      <button onclick="addLoan()">Add Debt</button>
+
+      <div class="list" id="loanList"></div>
+    </div>
+
+    <!-- FILTER -->
+    <div id="filter" class="card hidden tab">
+      <h2>Filter by Date</h2>
+      <input type="date" id="fromDate" />
+      <input type="date" id="toDate" />
+      <button onclick="applyFilter()">Apply</button>
+    </div>
+
+  </div>
+
+  <script src="app.js"></script>
+</body>
+      </html>
