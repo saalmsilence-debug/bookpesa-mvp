@@ -1,172 +1,32 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>BookPesa MVP</title>
-  <link rel="stylesheet" href="styles.css" />
+    <meta charset="UTF-8">
+    <title>BookPesa MVP</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="styles.css">
 </head>
+
 <body>
-
-  <header class="topbar">
-    <h1>BookPesa</h1>
-    <div>
-      <span id="currentUserBadge" class="muted small"></span>
-      <button id="logoutBtn" class="link small" style="display:none">Logout</button>
+    <div id="app">
+        <!-- All your views are already correct -->
+        <!-- Do not change them -->
+        <!-- JS will control visibility -->
     </div>
-  </header>
 
-  <main>
+    <!-- VERY IMPORTANT -->
+    <!-- Load JS LAST so it can find the elements -->
+    <script src="app.js?v=10"></script>
 
-    <!-- LOGIN VIEW -->
-    <section id="loginView" class="view">
-      <div class="card">
-        <h2>Sign in or Create account</h2>
-
-        <input id="usernameInput" placeholder="Username (e.g. simon)" />
-        <input id="pinInput" placeholder="5-digit PIN" maxlength="5" inputmode="numeric" />
-
-        <div class="row">
-          <button id="createBtn" class="btn">Create Account</button>
-          <button id="loginBtn" class="btn ghost">Sign In</button>
-        </div>
-
-        <p class="muted small">
-          Your data stays on this device (LocalStorage).
-        </p>
-
-        <hr />
-
-        <label class="muted small">Existing users:</label>
-        <div id="userList" class="list"></div>
-      </div>
-    </section>
-
-    <!-- DASHBOARD -->
-    <section id="dashboardView" class="view" style="display:none">
-      <div class="card">
-        <h2>Dashboard</h2>
-
-        <div class="grid">
-          <div class="tile">
-            <div class="tile-title">Balance</div>
-            <div id="balance">Ksh 0</div>
-          </div>
-
-          <div class="tile">
-            <div class="tile-title">Profit / Loss (date range)</div>
-            <div id="pnl">Ksh 0</div>
-          </div>
-
-          <div class="tile">
-            <div class="tile-title">Stock Value</div>
-            <div id="stockVal">Ksh 0</div>
-          </div>
-        </div>
-
-        <div class="row wrap" style="margin-top:12px;">
-          <button class="btn" data-nav="ledgerView">Ledger</button>
-          <button class="btn" data-nav="inventoryView">Inventory</button>
-          <button class="btn" data-nav="loansView">Loans / Debts</button>
-        </div>
-
-        <div class="card" style="margin-top:14px;">
-          <h3>Date Filter</h3>
-          <div class="row">
-            <label>From <input type="date" id="filterFrom" /></label>
-            <label>To <input type="date" id="filterTo" /></label>
-          </div>
-          <div class="row" style="margin-top:10px;">
-            <button id="applyFilter" class="btn ghost">Apply</button>
-            <button id="clearFilter" class="btn ghost">Clear</button>
-          </div>
-        </div>
-      </div>
-    </section>
-
-    <!-- LEDGER -->
-    <section id="ledgerView" class="view" style="display:none">
-      <div class="card">
-        <h2>Ledger</h2>
-
-        <form id="ledgerForm" class="stack">
-          <input id="ledgerDesc" placeholder="Description" />
-          <input id="ledgerAmount" placeholder="Amount (use - for expense)" inputmode="numeric" />
-          <input id="ledgerDate" type="date" />
-
-          <select id="ledgerTag">
-            <option value="income">Income</option>
-            <option value="expense">Expense</option>
-            <option value="sale">Sale</option>
-            <option value="other">Other</option>
-          </select>
-
-          <div class="row">
-            <button class="btn" type="submit">Add</button>
-            <button class="btn ghost" data-action="clear-ledger">Clear All</button>
-            <button class="btn ghost" data-action="export-ledger">Export CSV</button>
-          </div>
-        </form>
-
-        <div id="ledgerList" class="list"></div>
-      </div>
-    </section>
-
-    <!-- INVENTORY -->
-    <section id="inventoryView" class="view" style="display:none">
-      <div class="card">
-        <h2>Inventory</h2>
-
-        <form id="inventoryForm" class="stack">
-          <input id="itemName" placeholder="Item name" />
-          <input id="itemQty" placeholder="Quantity" inputmode="numeric" />
-          <input id="itemPrice" placeholder="Unit price" inputmode="numeric" />
-
-          <div class="row">
-            <button class="btn" type="submit">Add / Update</button>
-            <button class="btn ghost" data-action="clear-inv">Clear All</button>
-            <button class="btn ghost" data-action="export-inv">Export CSV</button>
-          </div>
-        </form>
-
-        <div id="inventoryList" class="list"></div>
-      </div>
-    </section>
-
-    <!-- LOANS -->
-    <section id="loansView" class="view" style="display:none">
-      <div class="card">
-        <h2>Loans & Debts</h2>
-
-        <form id="loanForm" class="stack">
-          <input id="loanName" placeholder="Name or source" />
-          <input id="loanAmount" placeholder="Amount (+ owed, - you owe)" inputmode="numeric" />
-          <input id="loanDate" type="date" />
-
-          <div class="row">
-            <button class="btn" type="submit">Add</button>
-            <button class="btn ghost" data-action="clear-loans">Clear All</button>
-            <button class="btn ghost" data-action="export-loans">Export CSV</button>
-          </div>
-        </form>
-
-        <div id="loanList" class="list"></div>
-      </div>
-    </section>
-</main>
-
-<!-- Bottom Navigation -->
-<nav class="bottom-nav">
-  <button onclick="showView('dashboardView')">Dashboard</button>
-  <button onclick="showView('ledgerView')">Ledger</button>
-  <button onclick="showView('inventoryView')">Inventory</button>
-  <button onclick="showView('loansView')">Loans</button>
-</nav>
-
-<footer class="footer">
-  <small>BookPesa MVP — Local data only</small>
-</footer>
-
-<script src="app.js?v=2"></script>
+    <script>
+        // Force run init() when DOM is ready
+        window.addEventListener("DOMContentLoaded", () => {
+            if (typeof init === "function") {
+                init();
+            } else {
+                alert("init() not found — JS error in app.js");
+            }
+        });
+    </script>
 </body>
 </html>
