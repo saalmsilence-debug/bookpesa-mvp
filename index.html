@@ -86,16 +86,14 @@
             <option value="sale">Sale</option>
             <option value="other">Other</option>
           </select>
-          <div class="row">
-            <button class="btn" type="submit">Add</button>
-            <button class="btn ghost" data-action="clear-ledger">Clear All</button>
-            <button class="btn ghost" data-action="export-ledger">Export CSV</button>
-          </div>
-        </form>
-        <div id="ledgerList" class="list"></div>
-      </div>
-    </section>
 
+<div id="debtTypeBox" class="card" style="display:none; margin-top:10px;">
+  <label style="font-weight:bold;">Debt Type:</label><br>
+  <button class="debtBtn" data-type="in">Debt IN (Client owes me)</button>
+  <button class="debtBtn" data-type="out">Debt OUT (I owe client)</button>
+</div>
+
+<div class="row">
     <!-- INVENTORY -->
     <section id="inventoryView" class="view" style="display:none">
       <div class="card">
