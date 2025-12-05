@@ -1,6 +1,7 @@
 <!doctype html>
 <html lang="en">
-<head>
+<head><link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#1a73e8">
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>BookPesa MVP</title>
@@ -170,6 +171,12 @@
       });
     }
   </script>
-
+<script>
+if ("serviceWorker" in navigator) {
+  navigator.serviceWorker.register("service-worker.js")
+    .then(() => console.log("Service worker registered"))
+    .catch(err => console.error("SW registration failed", err));
+}
+</script>
 </body>
 </html>
