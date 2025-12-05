@@ -1,1 +1,9 @@
-
+{
+  "name": "BookPesa",
+  "short_name": "BookPesa",
+  "start_url": "/bookpesa-mvp/",
+  "display": "standalone",
+  "background_color": "#050816",
+  "theme_color": "#22c55e",
+  "icons": []
+}
