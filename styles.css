@@ -62,4 +62,23 @@ input::placeholder{color:#9aa7d2}
   font-size: 15px;
   color: #0b66ff;
   padding: 8px 5px;
+}/* Profit (credit) styling */
+.profit {
+    color: #0f9d58;        /* Google green */
+    font-weight: bold;
+}
+
+/* Loss (debit) styling */
+.loss {
+    color: #db4437;        /* Google red */
+    font-weight: bold;
+}
+
+/* Balance styling */
+#balance.profit {
+    color: #0f9d58;
+}
+
+#balance.loss {
+    color: #db4437;
 }
