@@ -203,12 +203,24 @@ function renderLedger(){
   const out = document.getElementById("ledgerList"); out.innerHTML = "";
   if(entries.length===0){ out.innerHTML = "<p class='muted'>No entries yet.</p>"; return; }
   entries.forEach(it=>{
-    const row = document.createElement("div"); row.className="row";
-    const left = document.createElement("div"); left.innerHTML = `<strong>${it.desc}</strong><div class='muted'>${it.date} • ${it.tag}</div>`;
-    const right = document.createElement("div"); right.innerHTML = `<div>${formatKsh(it.amt)}</div><button class='link small' data-delete-id='${it.id}'>Delete</button>`;
-    row.append(left,right); out.append(row);
-  });
-}
+    const row = document.createElement("div");
+
+    // ✔ Colour logic
+    if (it.amount < 0) {
+        row.classList.add("loss");   // red
+    } else {
+        row.classList.add("profit"); // green
+    }
+
+    const left = document.createElement("div");
+    left.textContent = it.description || "No description";
+
+    const right = document.createElement("div");
+    right.textContent = it.amount;
+
+    row.append(left, right);
+    out.append(row);
+});
 
 function renderInventory(){
   if(!ensureUser()){ document.getElementById("inventoryList").innerHTML = "<p class='muted'>Sign in to see inventory.</p>"; return; }
@@ -229,12 +241,24 @@ function renderLoans(){
   const out = document.getElementById("loanList"); out.innerHTML = "";
   if(loans.length===0){ out.innerHTML = "<p class='muted'>No loans yet.</p>"; return; }
   loans.forEach(it=>{
-    const row = document.createElement("div"); row.className="row";
-    const left = document.createElement("div"); left.innerHTML = `<strong>${it.name}</strong><div class='muted'>${it.date}</div>`;
-    const right = document.createElement("div"); right.innerHTML = `<div>${formatKsh(it.amt)}</div><button class='link small' data-delete-id='${it.id}'>Delete</button>`;
-    row.append(left,right); out.append(row);
-  });
-}
+    const row = document.createElement("div");
+
+    // ✔ Profit/loss colouring
+    if (it.amount < 0) {
+        row.classList.add("loss");
+    } else {
+        row.classList.add("profit");
+    }
+
+    const left = document.createElement("div");
+    left.textContent = it.description;
+
+    const right = document.createElement("div");
+    right.textContent = it.amount;
+
+    row.append(left, right);
+    out.append(row);
+});
 
 function parseDate(s){ return new Date(s + "T00:00:00"); }
 
@@ -245,7 +269,15 @@ function renderDashboard(){
   const loansSum = (user.loans || []).reduce((s,i)=>s + Number(i.amt),0);
   const stockVal = (user.inventory || []).reduce((s,i)=>s + (Number(i.qty) * Number(i.price)),0);
   const balance = ledgerSum + loansSum;
-  document.getElementById("balance").textContent = formatKsh(balance);
+  const bal = document.getElementById("balance");
+bal.textContent = formatKsh(balance);
+
+// Color logic for dashboard
+if (balance < 0) {
+    bal.className = "loss";    // red
+} else {
+    bal.className = "profit";  // green
+}
   document.getElementById("stockVal").textContent = formatKsh(stockVal);
 
   let from = document.getElementById("filterFrom").value;
